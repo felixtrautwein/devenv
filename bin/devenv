@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# devenv - build, publish and distribute the universal development environment.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REGISTRY="${DEVENV_REGISTRY:-ghcr.io/felixtrautwein/devenv}"
+VARIANTS_DIR="${REPO_ROOT}/image/variants"
+TEMPLATE_DIR="${REPO_ROOT}/template"
+
+usage() {
+    cat <<'EOF'
+Usage: devenv <command> [options]
+
+Commands:
+  build [variant...]      Build image variants locally (default: web).
+  push [variant...]       Build and push variants to the registry.
+  variants                List the available variants.
+  sync <path>...          Copy the devcontainer template into target repositories.
+  doctor                  Check that the host satisfies the devcontainer prerequisites.
+
+Environment:
+  DEVENV_REGISTRY   Image repository (default: ghcr.io/felixtrautwein/devenv).
+  DEVENV_TAG        Extra tag applied in addition to the variant name.
+EOF
+}
+
+list_variants() {
+    for file in "${VARIANTS_DIR}"/*.env; do
+        basename "${file}" .env
+    done
+}
+
+build_variant() {
+    local variant="$1" push="$2"
+    local env_file="${VARIANTS_DIR}/${variant}.env"
+    [[ -f "${env_file}" ]] || {
+        echo "Unknown variant '${variant}'. Available: $(list_variants | tr '\n' ' ')" >&2
+        exit 1
+    }
+
+    local args=()
+    while IFS='=' read -r key value; do
+        [[ -z "${key}" || "${key}" == \#* ]] && continue
+        args+=(--build-arg "${key}=${value}")
+    done <"${env_file}"
+
+    local tags=(--tag "${REGISTRY}:${variant}")
+    [[ "${variant}" == "web" ]] && tags+=(--tag "${REGISTRY}:latest")
+    [[ -n "${DEVENV_TAG:-}" ]] && tags+=(--tag "${REGISTRY}:${variant}-${DEVENV_TAG}")
+    [[ "${push}" == "true" ]] && tags+=(--push) || tags+=(--load)
+
+    echo ">>> building ${REGISTRY}:${variant}"
+    docker buildx build "${args[@]}" "${tags[@]}" "${REPO_ROOT}/image"
+}
+
+sync_repo() {
+    local target="$1"
+    [[ -d "${target}" ]] || {
+        echo "Not a directory: ${target}" >&2
+        exit 1
+    }
+
+    mkdir -p "${target}/.devcontainer" "${target}/.vscode"
+
+    for name in devcontainer.json docker-compose.devcontainer.yml initializeCommand.sh postAttachCommand.sh; do
+        cp "${TEMPLATE_DIR}/.devcontainer/${name}" "${target}/.devcontainer/${name}"
+    done
+    chmod +x "${target}/.devcontainer/initializeCommand.sh" "${target}/.devcontainer/postAttachCommand.sh"
+
+    # The Dockerfile is an extension point; never clobber local additions.
+    if [[ ! -f "${target}/.devcontainer/Dockerfile" ]]; then
+        cp "${TEMPLATE_DIR}/.devcontainer/Dockerfile" "${target}/.devcontainer/Dockerfile"
+    else
+        echo "    kept existing .devcontainer/Dockerfile"
+    fi
+
+    if [[ ! -f "${target}/.vscode/settings.json" ]]; then
+        cp "${TEMPLATE_DIR}/.vscode/settings.json" "${target}/.vscode/settings.json"
+    else
+        echo "    kept existing .vscode/settings.json"
+    fi
+
+    if [[ ! -f "${target}/.pre-commit-config.yaml" ]]; then
+        cp "${TEMPLATE_DIR}/.pre-commit-config.yaml" "${target}/.pre-commit-config.yaml"
+    else
+        echo "    kept existing .pre-commit-config.yaml"
+    fi
+
+    grep -qxF '.devcontainer/.env' "${target}/.gitignore" 2>/dev/null ||
+        echo '.devcontainer/.env' >>"${target}/.gitignore"
+
+    echo ">>> synced ${target}"
+}
+
+doctor() {
+    local ok=0
+    command -v docker >/dev/null || {
+        echo "MISSING: docker"
+        ok=1
+    }
+    docker info >/dev/null 2>&1 || {
+        echo "NOT RUNNING: docker daemon"
+        ok=1
+    }
+    docker buildx version >/dev/null 2>&1 || {
+        echo "MISSING: docker buildx plugin"
+        ok=1
+    }
+    id -nG "${USER}" | grep -qw docker || {
+        echo "NOT IN GROUP: ${USER} is not a member of 'docker'"
+        ok=1
+    }
+    [[ -S /var/run/docker.sock ]] || {
+        echo "MISSING: /var/run/docker.sock"
+        ok=1
+    }
+    ((ok == 0)) && echo "All prerequisites satisfied."
+    return "${ok}"
+}
+
+command="${1:-}"
+shift || true
+
+case "${command}" in
+build)
+    for variant in "${@:-web}"; do build_variant "${variant}" false; done
+    ;;
+push)
+    for variant in "${@:-web}"; do build_variant "${variant}" true; done
+    ;;
+variants) list_variants ;;
+sync)
+    [[ $# -gt 0 ]] || {
+        usage
+        exit 1
+    }
+    for target in "$@"; do sync_repo "${target}"; done
+    ;;
+doctor) doctor ;;
+"" | -h | --help | help) usage ;;
+*)
+    echo "Unknown command: ${command}" >&2
+    usage
+    exit 1
+    ;;
+esac

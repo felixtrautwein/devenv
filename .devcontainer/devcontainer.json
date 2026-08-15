@@ -1,0 +1,40 @@
+// Managed by https://github.com/felixtrautwein/devenv - run `devenv sync` to update.
+// For format details, see https://aka.ms/devcontainer.json
+{
+  "name": "devcontainer-${localEnv:USER}-${localWorkspaceFolderBasename}",
+  "dockerComposeFile": ["docker-compose.devcontainer.yml"],
+  "service": "devcontainer",
+  "workspaceFolder": "${localEnv:PWD}",
+  "remoteUser": "dev",
+  "remoteEnv": {
+    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+  },
+  "initializeCommand": "${localWorkspaceFolder}/.devcontainer/initializeCommand.sh",
+  "postAttachCommand": ".devcontainer/postAttachCommand.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": { "path": "/bin/bash" },
+          "zsh": { "path": "/usr/bin/zsh" }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "charliermarsh.ruff",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "GitHub.vscode-pull-request-github",
+        "Gruntfuggly.todo-tree",
+        "littlefoxteam.vscode-python-test-adapter",
+        "ms-azuretools.vscode-containers",
+        "ms-python.pylint",
+        "ms-python.python",
+        "ms-vscode.test-adapter-converter",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "timonwong.shellcheck"
+      ]
+    }
+  }
+}
