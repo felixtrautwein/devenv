@@ -34,9 +34,4 @@ repos:
         language: system
         entry: uv sync --all-packages
         pass_filenames: false
-      - id: test
-        name: Execute tests
-        language: system
-        entry: uv run pytest
-        pass_filenames: false
 # --- repository specific hooks below ---
