@@ -52,3 +52,14 @@ done
 
 grep -q '^DEVENV_IMAGE=' "${env_file}" ||
     echo "DEVENV_IMAGE=ghcr.io/felixtrautwein/devenv:web" >>"${env_file}"
+
+# `docker compose build` never refreshes an already present base image tag, so a
+# stale (or locally built) DEVENV_IMAGE would silently be reused forever.
+# Set DEVENV_SKIP_PULL=1 in .env when DEVENV_IMAGE is built locally on purpose.
+devenv_image="$(sed -n 's/^DEVENV_IMAGE=//p' "${env_file}" | tail -1)"
+skip_pull="$(sed -n 's/^DEVENV_SKIP_PULL=//p' "${env_file}" | tail -1)"
+if [[ -z "${skip_pull}" || "${skip_pull}" == "0" ]]; then
+    echo "Pulling ${devenv_image}..."
+    docker pull "${devenv_image}" ||
+        echo "Pull failed - falling back to the local copy of ${devenv_image}." >&2
+fi
