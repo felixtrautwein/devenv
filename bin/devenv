@@ -86,6 +86,12 @@ sync_repo() {
         echo "    kept existing .pre-commit-config.yaml"
     fi
 
+    if [[ ! -f "${target}/.python-version" ]]; then
+        cp "${TEMPLATE_DIR}/.python-version" "${target}/.python-version"
+    else
+        echo "    kept existing .python-version"
+    fi
+
     grep -qxF '.devcontainer/.env' "${target}/.gitignore" 2>/dev/null ||
         echo '.devcontainer/.env' >>"${target}/.gitignore"
 

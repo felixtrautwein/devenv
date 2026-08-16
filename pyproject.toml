@@ -1,0 +1,34 @@
+[project]
+name = "devenv"
+version = "0.1.0"
+description = "Reusable development container image and templates."
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0.0",
+    "pylint>=3.0.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.14.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+fix = true
+unsafe-fixes = true
+format.skip-magic-trailing-comma = true
+lint.isort.combine-as-imports = true
+lint.isort.split-on-trailing-comma = false
+lint.select = ["ALL"]
+lint.ignore = ["ANN401", "COM812", "D203", "D212", "D107", "EM101", "EM102", "PGH003", "TRY003"]
+
+[tool.pylint]
+max-line-length = 120
+
+[tool.pytest.ini_options]
+addopts = "-ra"

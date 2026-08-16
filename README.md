@@ -38,8 +38,8 @@ timezone `Europe/Berlin` and `LANG=C.UTF-8`.
 ```
 
 This writes `.devcontainer/`, and - only if they do not exist yet -
-`.devcontainer/Dockerfile`, `.vscode/settings.json` and
-`.pre-commit-config.yaml`. Then reopen the project in the container.
+`.devcontainer/Dockerfile`, `.vscode/settings.json`, `.pre-commit-config.yaml`
+and `.python-version`. Then reopen the project in the container.
 
 Pick a slimmer image by setting `DEVENV_IMAGE` in `.devcontainer/.env`:
 
@@ -97,7 +97,7 @@ Set `DEVENV_REGISTRY` to publish the images somewhere else.
 
 ## Migration notes
 
-`devenv sync` never overwrites an existing `.pre-commit-config.yaml`,
-`.vscode/settings.json` or `.devcontainer/Dockerfile`. When migrating an
-existing project, diff its files against `template/` and keep only the genuinely
-project-specific parts.
+`devenv sync` never overwrites an existing `.python-version`,
+`.pre-commit-config.yaml`, `.vscode/settings.json` or `.devcontainer/Dockerfile`.
+When migrating an existing project, diff its files against `template/` and keep
+only the genuinely project-specific parts.
