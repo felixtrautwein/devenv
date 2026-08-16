@@ -70,4 +70,5 @@
   "git.ignoreLimitWarning": true,
   "gitlens.advanced.fileHistoryFollowsRenames": true,
   "chat.sessionSync.enabled": true
+  // --- repository specific settings below ---
 }

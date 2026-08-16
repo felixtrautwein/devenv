@@ -112,6 +112,13 @@ sync_repo() {
     merge_managed_file "${TEMPLATE_DIR}/.pre-commit-config.yaml" "${target}/.pre-commit-config.yaml" \
         "# --- repository specific hooks below ---"
 
+    # pyproject.toml is entirely repository specific; only seed it once.
+    if [[ ! -f "${target}/pyproject.toml" ]]; then
+        cp "${TEMPLATE_DIR}/pyproject.toml" "${target}/pyproject.toml"
+    else
+        echo "    kept existing ${target}/pyproject.toml"
+    fi
+
     chmod +x "${target}/.devcontainer/initializeCommand.sh" "${target}/.devcontainer/postAttachCommand.sh"
 
     grep -qxF '.devcontainer/.env' "${target}/.gitignore" 2>/dev/null ||
