@@ -68,6 +68,7 @@
   "pylint.interpreter": ["${workspaceFolder}/.venv/bin/python"],
   "pylint.importStrategy": "fromEnvironment",
   "git.ignoreLimitWarning": true,
-"gitlens.advanced.fileHistoryFollowsRenames": true,
-"chat.sessionSync.enabled": true
+  "gitlens.advanced.fileHistoryFollowsRenames": true,
+  "chat.sessionSync.enabled": true,
+  "todo-tree.ripgrep.ripgrep": "/usr/bin/rg"
 }
