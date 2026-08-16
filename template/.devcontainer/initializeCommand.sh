@@ -63,3 +63,5 @@ if [[ -z "${skip_pull}" || "${skip_pull}" == "0" ]]; then
     docker pull "${devenv_image}" ||
         echo "Pull failed - falling back to the local copy of ${devenv_image}." >&2
 fi
+
+# --- repository specific additions below ---

@@ -39,3 +39,4 @@ repos:
         language: system
         entry: uv run pytest
         pass_filenames: false
+# --- repository specific hooks below ---

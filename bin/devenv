@@ -53,6 +53,42 @@ build_variant() {
     docker buildx build "${args[@]}" "${tags[@]}" "${REPO_ROOT}/image"
 }
 
+# Overwrite the managed portion of a file while preserving whatever a user
+# appended after the marker line, so repository-specific customizations
+# survive re-syncing. `closing`, if set, is a trailing line (e.g. a JSON
+# closing brace) that stays after the preserved user content.
+merge_managed_file() {
+    local template="$1" target="$2" marker="$3" closing="${4:-}"
+
+    if [[ ! -f "${target}" ]]; then
+        cp "${template}" "${target}"
+        return
+    fi
+
+    if ! grep -qxF "${marker}" "${target}"; then
+        echo "    kept existing ${target} (no managed-section marker found, merge it manually)"
+        return
+    fi
+
+    local tmp
+    tmp="$(mktemp)"
+    awk -v marker="${marker}" '{print} $0 == marker {exit}' "${template}" >"${tmp}"
+
+    if [[ -n "${closing}" ]]; then
+        awk -v marker="${marker}" -v closing="${closing}" '
+            found && $0 == closing { exit }
+            found { print }
+            $0 == marker { found = 1 }
+        ' "${target}" >>"${tmp}"
+        echo "${closing}" >>"${tmp}"
+    else
+        awk -v marker="${marker}" 'found { print } $0 == marker { found = 1 }' "${target}" >>"${tmp}"
+    fi
+
+    mv "${tmp}" "${target}"
+    echo "    merged ${target} (kept repository specific section)"
+}
+
 sync_repo() {
     local target="$1"
     [[ -d "${target}" ]] || {
@@ -62,35 +98,21 @@ sync_repo() {
 
     mkdir -p "${target}/.devcontainer" "${target}/.vscode"
 
-    for name in devcontainer.json docker-compose.devcontainer.yml initializeCommand.sh postAttachCommand.sh; do
+    for name in devcontainer.json docker-compose.devcontainer.yml postAttachCommand.sh; do
         cp "${TEMPLATE_DIR}/.devcontainer/${name}" "${target}/.devcontainer/${name}"
     done
+    cp "${TEMPLATE_DIR}/.python-version" "${target}/.python-version"
+
+    merge_managed_file "${TEMPLATE_DIR}/.devcontainer/Dockerfile" "${target}/.devcontainer/Dockerfile" \
+        "# --- repository specific additions below ---"
+    merge_managed_file "${TEMPLATE_DIR}/.devcontainer/initializeCommand.sh" "${target}/.devcontainer/initializeCommand.sh" \
+        "# --- repository specific additions below ---"
+    merge_managed_file "${TEMPLATE_DIR}/.vscode/settings.json" "${target}/.vscode/settings.json" \
+        "  // --- repository specific settings below ---" "}"
+    merge_managed_file "${TEMPLATE_DIR}/.pre-commit-config.yaml" "${target}/.pre-commit-config.yaml" \
+        "# --- repository specific hooks below ---"
+
     chmod +x "${target}/.devcontainer/initializeCommand.sh" "${target}/.devcontainer/postAttachCommand.sh"
-
-    # The Dockerfile is an extension point; never clobber local additions.
-    if [[ ! -f "${target}/.devcontainer/Dockerfile" ]]; then
-        cp "${TEMPLATE_DIR}/.devcontainer/Dockerfile" "${target}/.devcontainer/Dockerfile"
-    else
-        echo "    kept existing .devcontainer/Dockerfile"
-    fi
-
-    if [[ ! -f "${target}/.vscode/settings.json" ]]; then
-        cp "${TEMPLATE_DIR}/.vscode/settings.json" "${target}/.vscode/settings.json"
-    else
-        echo "    kept existing .vscode/settings.json"
-    fi
-
-    if [[ ! -f "${target}/.pre-commit-config.yaml" ]]; then
-        cp "${TEMPLATE_DIR}/.pre-commit-config.yaml" "${target}/.pre-commit-config.yaml"
-    else
-        echo "    kept existing .pre-commit-config.yaml"
-    fi
-
-    if [[ ! -f "${target}/.python-version" ]]; then
-        cp "${TEMPLATE_DIR}/.python-version" "${target}/.python-version"
-    else
-        echo "    kept existing .python-version"
-    fi
 
     grep -qxF '.devcontainer/.env' "${target}/.gitignore" 2>/dev/null ||
         echo '.devcontainer/.env' >>"${target}/.gitignore"
