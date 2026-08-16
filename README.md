@@ -7,24 +7,24 @@ into every repository.
 
 ## Layout
 
-| Path | Purpose |
-| --- | --- |
-| `image/Dockerfile` | The universal image. Every capability is behind a build ARG. |
-| `image/scripts/` | Install scripts invoked by the Dockerfile. |
-| `image/variants/` | Build-arg presets defining the published tags. |
-| `template/` | Files copied into consuming projects. |
-| `bin/devenv` | CLI to build, push and distribute. |
-| `.github/workflows/build-image.yml` | on-change build of all variants. |
+| Path                                | Purpose                                                      |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `image/Dockerfile`                  | The universal image. Every capability is behind a build ARG. |
+| `image/scripts/`                    | Install scripts invoked by the Dockerfile.                   |
+| `image/variants/`                   | Build-arg presets defining the published tags.               |
+| `template/`                         | Files copied into consuming projects.                        |
+| `bin/devenv`                        | CLI to build, push and distribute.                           |
+| `.github/workflows/build-image.yml` | on-change build of all variants.                             |
 
 ## Image variants
 
 Published to `ghcr.io/felixtrautwein/devenv:<variant>`.
 
-| Tag | Contents |
-| --- | --- |
+| Tag                | Contents                                             |
+| ------------------ | ---------------------------------------------------- |
 | `web` (= `latest`) | `python` + kubectl, helm, terraform, hcloud, ansible |
-| `python` | python + uv, docker cli, gh |
-| `embedded` | `python` + platformio, clang, udev rules |
+| `python`           | python + uv, docker cli, gh                          |
+| `embedded`         | `python` + platformio, clang, udev rules             |
 
 Every variant contains the shared base: Debian bookworm with CPython, `uv`,
 git + git-lfs, gettext, direnv, zsh, ripgrep, jq, network debugging tools
@@ -37,9 +37,14 @@ timezone `Europe/Berlin` and `LANG=C.UTF-8`.
 /path/to/devenv/bin/devenv sync /path/to/your-project
 ```
 
-This writes `.devcontainer/`, and - only if they do not exist yet -
-`.devcontainer/Dockerfile`, `.vscode/settings.json`, `.pre-commit-config.yaml`
-and `.python-version`. Then reopen the project in the container.
+This writes the shared devcontainer files, workflow support and
+`deployment/README.md`. The sealed-secret renderer, deployment README and
+`refresh-sealed-secrets.yaml` are updated on every sync. `release.yaml` is
+merged up to its repository-specific marker; content below that marker is
+preserved. Project-specific files such as `.devcontainer/Dockerfile`,
+`.vscode/settings.json`, `.pre-commit-config.yaml`, `.python-version` and
+`pyproject.toml` are preserved or merged as described below. Then reopen the
+project in the container.
 
 Pick a slimmer image by setting `DEVENV_IMAGE` in `.devcontainer/.env`:
 
@@ -97,7 +102,11 @@ Set `DEVENV_REGISTRY` to publish the images somewhere else.
 
 ## Migration notes
 
-`devenv sync` never overwrites an existing `.python-version`,
-`.pre-commit-config.yaml`, `.vscode/settings.json` or `.devcontainer/Dockerfile`.
-When migrating an existing project, diff its files against `template/` and keep
-only the genuinely project-specific parts.
+`devenv sync` overwrites the managed sealed-secret renderer and deployment
+README and refresh workflow. It merges `release.yaml` through its
+repository-specific marker and preserves content below it. Existing
+`.python-version`, `.pre-commit-config.yaml`, `.vscode/settings.json`,
+`.devcontainer/Dockerfile` and `pyproject.toml` are preserved or merged
+without replacing repository-specific content. When migrating an existing
+project, diff its files against `template/` and keep only the genuinely
+project-specific parts.

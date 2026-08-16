@@ -96,12 +96,26 @@ sync_repo() {
         exit 1
     }
 
-    mkdir -p "${target}/.devcontainer" "${target}/.vscode"
+    mkdir -p \
+        "${target}/.devcontainer" \
+        "${target}/.vscode" \
+        "${target}/.github/workflows/scripts" \
+        "${target}/deployment"
 
     for name in devcontainer.json docker-compose.devcontainer.yml postAttachCommand.sh; do
         cp "${TEMPLATE_DIR}/.devcontainer/${name}" "${target}/.devcontainer/${name}"
     done
     cp "${TEMPLATE_DIR}/.python-version" "${target}/.python-version"
+    cp "${TEMPLATE_DIR}/.github/workflows/scripts/render-sealed-secrets.sh" \
+        "${target}/.github/workflows/scripts/render-sealed-secrets.sh"
+    cp "${TEMPLATE_DIR}/deployment/README.md" "${target}/deployment/README.md"
+    cp "${TEMPLATE_DIR}/.github/workflows/refresh-sealed-secrets.yaml" \
+        "${target}/.github/workflows/refresh-sealed-secrets.yaml"
+
+    merge_managed_file \
+        "${TEMPLATE_DIR}/.github/workflows/release.yaml" \
+        "${target}/.github/workflows/release.yaml" \
+        "# --- repository specific release additions below ---"
 
     merge_managed_file "${TEMPLATE_DIR}/.devcontainer/Dockerfile" "${target}/.devcontainer/Dockerfile" \
         "# --- repository specific additions below ---"
