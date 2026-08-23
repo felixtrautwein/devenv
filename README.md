@@ -41,7 +41,10 @@ This writes the shared devcontainer files, workflow support and
 `deployment/README.md`. The sealed-secret renderer, deployment README and
 `refresh-sealed-secrets.yaml` are updated on every sync. `release.yaml` is
 merged up to its repository-specific marker; content below that marker is
-preserved. Project-specific files such as `.devcontainer/Dockerfile`,
+preserved. `main.tf` is added only when it does not exist, providing the
+Terraform DNS configuration used by the release workflow; content below its
+repository-specific marker is preserved. Project-specific files such as
+`.devcontainer/Dockerfile`,
 `.vscode/settings.json`, `.pre-commit-config.yaml`, `.python-version` and
 `pyproject.toml` are preserved or merged as described below. Then reopen the
 project in the container.
@@ -104,9 +107,10 @@ Set `DEVENV_REGISTRY` to publish the images somewhere else.
 
 `devenv sync` overwrites the managed sealed-secret renderer and deployment
 README and refresh workflow. It merges `release.yaml` through its
-repository-specific marker and preserves content below it. Existing
+repository-specific marker and preserves content below it. It also merges
+`main.tf` through its Terraform marker and preserves content below it. Existing
 `.python-version`, `.pre-commit-config.yaml`, `.vscode/settings.json`,
-`.devcontainer/Dockerfile` and `pyproject.toml` are preserved or merged
-without replacing repository-specific content. When migrating an existing
-project, diff its files against `template/` and keep only the genuinely
-project-specific parts.
+`.devcontainer/Dockerfile` and `pyproject.toml` are preserved or merged without
+replacing repository-specific content. When migrating an existing project,
+diff its files against `template/` and keep only the genuinely project-specific
+parts.
