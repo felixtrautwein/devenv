@@ -69,6 +69,7 @@
   "pylint.importStrategy": "fromEnvironment",
   "git.ignoreLimitWarning": true,
   "gitlens.advanced.fileHistoryFollowsRenames": true,
-  "chat.sessionSync.enabled": true
+  "chat.sessionSync.enabled": true,
+  "todo-tree.ripgrep.ripgrep": "/usr/bin/rg"
   // --- repository specific settings below ---
 }
