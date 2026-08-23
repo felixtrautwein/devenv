@@ -30,7 +30,7 @@ fi
 
 # Preserve manual overrides (e.g. DEVENV_IMAGE, GITHUB_TOKEN) already in .env.
 # WORKSPACE_FOLDER mirrors the host path inside the container so that
-# ${localEnv:PWD} in devcontainer.json and the compose bind mount agree.
+# ${localWorkspaceFolder} in devcontainer.json and the compose bind mount agree.
 declare -A managed=(
     [USER]="${USER}"
     [WORKSPACE_FOLDER]="${repository_root}"

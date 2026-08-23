@@ -79,7 +79,7 @@ runs last.
 - The image ships a fixed user `dev`. `postAttachCommand.sh` remaps its uid/gid
   to the host values and aligns the `docker` group with the host socket gid, so
   the shared image works on any machine while bind mounts stay writable.
-- The project is mounted at its host path (`${localEnv:PWD}`), so file paths are
+- The project is mounted at its host path (`${localWorkspaceFolder}`), so file paths are
   identical inside and outside the container - stack traces, `direnv` whitelists
   and editor jumps all line up. `~/.cache` is a named volume
   (`devenv-cache-$USER`) that also holds the shell history.
