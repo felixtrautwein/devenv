@@ -28,7 +28,7 @@ if ! id -nG "${USER}" | grep -qw docker; then
     sudo usermod -aG docker "${USER}"
 fi
 
-# Preserve manual overrides (e.g. DEVENV_IMAGE, GITHUB_TOKEN) already in .env.
+# Preserve manual overrides (e.g. DEVENV_IMAGE) already in .env.
 # WORKSPACE_FOLDER mirrors the host path inside the container so that
 # ${localWorkspaceFolder} in devcontainer.json and the compose bind mount agree.
 declare -A managed=(

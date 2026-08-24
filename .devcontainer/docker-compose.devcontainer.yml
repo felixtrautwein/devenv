@@ -21,7 +21,6 @@ services:
       HOST_UID: ${HOST_UID}
       HOST_GID: ${HOST_GID}
       DOCKER_SOCK_GID: ${DOCKER_SOCK_GID}
-      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GHCR_USER: ${GHCR_USER:-}
       LC_ALL: C.UTF-8
     working_dir: ${WORKSPACE_FOLDER}

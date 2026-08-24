@@ -89,8 +89,7 @@ runs last.
 - `postAttachCommand.sh` is capability-detecting: it runs `uv sync` only when a
   `pyproject.toml` exists (`--all-packages` for uv workspaces), installs
   pre-commit hooks only when `.pre-commit-config.yaml` exists, enables git-lfs
-  only when `.gitattributes` uses it, and logs in to `ghcr.io` only when
-  `GITHUB_TOKEN` is set (as `GHCR_USER`, defaulting to `$USER`).
+  only when `.gitattributes` uses it.
 
 ## Building locally
 

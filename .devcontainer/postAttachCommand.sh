@@ -45,13 +45,6 @@ if [[ -f pyproject.toml ]]; then
     fi
 fi
 
-# --- container registry login, only when a token is available ---
-if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    echo "${GITHUB_TOKEN}" |
-        docker login ghcr.io -u "${GHCR_USER:-${USER}}" --password-stdin ||
-        echo "ghcr.io login failed - continuing without it." >&2
-fi
-
 # --- git hooks ---
 if [[ -f .pre-commit-config.yaml ]]; then
     if ! command -v pre-commit >/dev/null; then
