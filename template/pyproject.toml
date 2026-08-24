@@ -30,7 +30,7 @@ format.skip-magic-trailing-comma = true
 lint.isort.combine-as-imports = true
 lint.isort.split-on-trailing-comma = false
 lint.select = ["ALL"]
-lint.ignore = ["ANN401", "COM812", "D203", "D212", "D107", "EM101", "EM102", "PGH003", "TRY003"]
+lint.ignore = ["ANN401", "COM812", "D203", "D212", "D107", "EM101", "EM102", "PGH003", "TRY003", "TC"]
 
 [tool.pylint]
 max-line-length = 120
