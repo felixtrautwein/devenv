@@ -25,9 +25,28 @@ repos:
       - id: hadolint-docker
         args:
           [
-            --ignore, DL3008,
-            --ignore, DL3013,
-            --ignore, DL3059,
-            --ignore, DL3064,
-            --ignore, DL3066,
+            --ignore,
+            DL3008,
+            --ignore,
+            DL3013,
+            --ignore,
+            DL3059,
+            --ignore,
+            DL3064,
+            --ignore,
+            DL3066,
           ]
+  - repo: local
+    hooks:
+      - id: dependencies
+        name: Sync python dependencies
+        language: system
+        entry: uv sync --all-packages
+        pass_filenames: false
+      - id: zizmor
+        name: zizmor
+        language: python
+        entry: uv run zizmor .
+        files: ^\.github\/workflows\/
+        require_serial: true
+        pass_filenames: false

@@ -33,7 +33,8 @@
         "ms-vscode.test-adapter-converter",
         "redhat.vscode-yaml",
         "tamasfe.even-better-toml",
-        "timonwong.shellcheck"
+        "timonwong.shellcheck",
+        "astral-sh.ty"
       ]
     }
   }

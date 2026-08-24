@@ -34,4 +34,17 @@ repos:
         language: system
         entry: uv sync --all-packages
         pass_filenames: false
+      - id: ty
+        name: ty check
+        entry: uv run ty check
+        require_serial: true
+        language: unsupported
+        pass_filenames: false
+      - id: zizmor
+        name: zizmor
+        language: python
+        entry: uv run zizmor .
+        files: ^\.github\/workflows\/
+        require_serial: true
+        pass_filenames: false
 # --- repository specific hooks below ---
