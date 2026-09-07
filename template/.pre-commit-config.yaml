@@ -44,7 +44,6 @@ repos:
         name: zizmor
         language: python
         entry: uv run zizmor .
-        files: ^\.github\/workflows\/
         require_serial: true
         pass_filenames: false
 # --- repository specific hooks below ---
